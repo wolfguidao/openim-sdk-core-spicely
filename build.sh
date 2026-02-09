@@ -118,11 +118,13 @@ build_macos_arm64() {
         echo "❌ [MacOS arm64] 编译失败！"
         return 1
     fi
+
     install_name_tool -id @rpath/libopenim_sdk_ffi.dylib ./${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.dylib
     if [ $? -ne 0 ];then
         echo "❌ [MacOS arm64] 编译失败！"
         return 1
     fi
+
     cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}" ${OUTPUT_PATH}
     if [ $? -ne 0 ];then
         echo "❌ [MacOS arm64] 编译失败！"
@@ -136,8 +138,42 @@ build_macos_arm64() {
 build_macos_amd64() {
     echo "========================================"
     echo "📦 开始编译 [MacOS amd64] 平台代码..."
-    # 替换为实际编译命令
-    # GOOS=darwin GOARCH=amd64 go build -o ./bin/macos_x86_64/openim-sdk-core ./main.go
+    
+    export CFLAGS_X86_64="-Os -mmacosx-version-min=13.0 -arch x86_64 -isysroot $(xcrun -sdk macosx --show-sdk-path)"
+    export CGO_LDFLAGS_X86_64="-Os -mmacosx-version-min=13.0 -arch x86_64 -isysroot $(xcrun -sdk macosx --show-sdk-path)"
+
+    export GOOS="darwin"          # 保持macOS系统不变
+    export GOARCH="amd64"         # 关键：x86_64架构在Go中用amd64表示
+    export CGO_ENABLED="1"        # 开启CGO不变
+    export CC="clang $CFLAGS_X86_64 $CGO_LDFLAGS_X86_64"  # 引用x86_64的编译标志
+
+    pushd main
+    go build -tags macosx -ldflags="-linkmode=external -s -w" -trimpath -v -o ../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi_x86_64.a -buildmode c-archive
+    if [ $? -ne 0 ];then
+        popd
+        echo "❌ [MacOS x86_64] 编译失败！"
+        return 1
+    fi
+    popd
+
+    xcrun -sdk macosx clang -arch x86_64 -fpic -shared -Wl,-all_load ./${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi_x86_64.a -framework CoreFoundation -framework Security -lresolv -mmacosx-version-min=13.0 -o ./${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.dylib
+    if [ $? -ne 0 ];then
+        echo "❌ [MacOS x86_64] 编译失败！"
+        return 1
+    fi
+
+    strip -S ./${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.dylib
+    if [ $? -ne 0 ];then
+        echo "❌ [MacOS x86_64] 编译失败！"
+        return 1
+    fi
+
+    install_name_tool -id @rpath/libopenim_sdk_ffi.dylib ./${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.dylib
+    if [ $? -ne 0 ];then
+        echo "❌ [MacOS x86_64] 编译失败！"
+        return 1
+    fi
+
     echo "✅ [MacOS amd64] 编译完成！"
     echo "========================================"
 }
