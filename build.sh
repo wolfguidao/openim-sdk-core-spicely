@@ -33,12 +33,15 @@ build_linux_amd64() {
     export CGO_ENABLED=1
     export CC=x86_64-linux-gnu-gcc
 
+    pushd main
     go build -tags linux -ldflags="-s -w" -trimpath -v \
-        -o "./${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so" -buildmode=c-shared
+        -o "../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so" -buildmode=c-shared
     if [ $? -ne 0 ];then
+        popd
         echo "❌ [Linux x86] 编译失败！"
         return 1
     fi
+    popd
 
     cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}" ${OUTPUT_PATH}
     if [ $? -ne 0 ];then
@@ -62,12 +65,15 @@ build_linux_arm64() {
     export CC=aarch64-linux-gnu-gcc
     export CXX=aarch64-linux-gnu-g++
 
+    pushd main
     go build -tags linux -ldflags="-s -w" -trimpath -v \
-        -o "./${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so" -buildmode=c-shared
+        -o "../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so" -buildmode=c-shared
     if [ $? -ne 0 ];then
+        popd
         echo "❌ [Linux arm64] 编译失败！"
         return 1
     fi
+    popd
 
     cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}" ${OUTPUT_PATH}
     if [ $? -ne 0 ];then
