@@ -24,7 +24,7 @@ mkdir -p ${BUILD_PATH}
 # ------------------------ Linux 平台 ------------------------
 build_linux_amd64() {
     echo "========================================"
-    echo "📦 开始编译 [Linux x86] 平台代码..."
+    echo "📦 开始编译 [Linux amd64] 平台代码..."
 
     unset CGO_CFLAGS
     unset CGO_LDFLAGS
@@ -38,18 +38,18 @@ build_linux_amd64() {
         -o "../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so" -buildmode=c-shared
     if [ $? -ne 0 ];then
         popd
-        echo "❌ [Linux x86] 编译失败！"
+        echo "❌ [Linux amd64] 编译失败！"
         return 1
     fi
     popd
 
     cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}" ${OUTPUT_PATH}
     if [ $? -ne 0 ];then
-        echo "❌ [Linux x86] 编译失败！"
+        echo "❌ [Linux amd64] 编译失败！"
         return 1
     fi
 
-    echo "✅ [Linux x86] 编译完成！"
+    echo "✅ [Linux amd64] 编译完成！"
     echo "========================================"
 }
 
@@ -95,12 +95,12 @@ build_macos_arm64() {
     echo "========================================"
 }
 
-build_macos_x86_64() {
+build_macos_amd64() {
     echo "========================================"
-    echo "📦 开始编译 [MacOS x86_64] 平台代码..."
+    echo "📦 开始编译 [MacOS amd64] 平台代码..."
     # 替换为实际编译命令
     # GOOS=darwin GOARCH=amd64 go build -o ./bin/macos_x86_64/openim-sdk-core ./main.go
-    echo "✅ [MacOS x86_64] 编译完成！"
+    echo "✅ [MacOS amd64] 编译完成！"
     echo "========================================"
 }
 
@@ -137,13 +137,13 @@ build_android_armeabi-v7a() {
 }
 
 # Android x86_64（主流64位架构）
-build_android_x86_64() {
+build_android_amd64() {
     echo "========================================"
-    echo "📦 开始编译 [Android x86_64] 平台代码..."
+    echo "📦 开始编译 [Android amd64] 平台代码..."
     # 替换为实际编译命令（示例：NDK 编译 C/C++ 代码）
     # ${ANDROID_NDK_PATH}/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk APP_ABI=arm64-v8a
     # GOOS=android GOARCH=arm64 GOARM=8 go build -o ./bin/android/arm64-v8a/openim-sdk-core.so ./main.go
-    echo "✅ [Android x86_64] 编译完成！"
+    echo "✅ [Android amd64] 编译完成！"
     echo "========================================"
 }
 
@@ -170,13 +170,13 @@ build_ios_arm64() {
 }
 
 # iOS x86_64（模拟器架构）
-build_ios_x86_64() {
+build_ios_amd64() {
     echo "========================================"
-    echo "📦 开始编译 [iOS x86_64 (模拟器)] 平台代码..."
+    echo "📦 开始编译 [iOS amd64 (模拟器)] 平台代码..."
     # 替换为实际编译命令
     # xcodebuild -project OpenIMSDK.xcodeproj -scheme OpenIMSDK -sdk iphonesimulator -arch x86_64 build
     # GOOS=ios GOARCH=amd64 CGO_ENABLED=1 CC=clang go build -o ./bin/ios/x86_64/libopenim-sdk-core.a ./main.go
-    echo "✅ [iOS x86_64 (模拟器)] 编译完成！"
+    echo "✅ [iOS amd64 (模拟器)] 编译完成！"
     echo "========================================"
 }
 
@@ -186,15 +186,15 @@ if [ $# -ne 2 ]; then
     echo "✅ 正确用法：sh $0 <操作系统> <架构>"
     echo "📌 支持的平台&架构示例："
     echo "   # Linux 系列"
-    echo "   bash $0 Linux x86          bash $0 Linux arm64"
+    echo "   bash $0 Linux amd64        bash $0 Linux arm64"
     echo "   # MacOS 系列"
-    echo "   bash $0 MacOS arm64        bash $0 MacOS x86_64"
+    echo "   bash $0 MacOS arm64        bash $0 MacOS amd64"
     echo "   # Windows 系列"
     echo "   bash $0 Windows amd64"
     echo "   # Android 系列（核心新增）"
     echo "   bash $0 Android arm64-v8a  bash $0 Android armeabi-v7a"
     echo "   # iOS 系列（核心新增）"
-    echo "   bash $0 iOS arm64          bash $0 iOS x86_64"
+    echo "   bash $0 iOS arm64          bash $0 iOS amd64"
     exit 1
 fi
 
