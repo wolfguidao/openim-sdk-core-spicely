@@ -89,8 +89,41 @@ build_linux_arm64() {
 build_macos_arm64() {
     echo "========================================"
     echo "📦 开始编译 [MacOS arm64] 平台代码..."
-    # 替换为实际编译命令
-    # GOOS=darwin GOARCH=arm64 go build -o ./bin/macos_arm64/openim-sdk-core ./main.go
+
+    export CFLAGS_ARM64="-Os -mmacosx-version-min=13.0 -arch arm64 -isysroot $(xcrun -sdk macosx --show-sdk-path)"
+    export CGO_LDFLAGS_ARM64="-Os -mmacosx-version-min=13.0 -arch arm64 -isysroot $(xcrun -sdk macosx --show-sdk-path)"
+
+    pushd main
+    CGO_ENABLED=1 GOARCH=arm64 GOOS=darwin CC="clang $CFLAGS_ARM64 $CGO_LDFLAGS_ARM64" go build -tags macosx -ldflags="-linkmode=external -s -w" -trimpath -v -o ../{${BUILD_PATH}}/${GOOS}_${GOARCH}/libopenim_sdk_ffi_arm64.a -buildmode c-archive
+    if [ $? -ne 0 ];then
+        popd
+        echo "❌ [MacOS arm64] 编译失败！"
+        return 1
+    fi
+    popd
+
+    xcrun -sdk macosx clang -arch arm64 -fpic -shared -Wl,-all_load ./{${BUILD_PATH}}/${GOOS}_${GOARCH}/libopenim_sdk_ffi_arm64.a -framework CoreFoundation -framework Security -lresolv -mmacosx-version-min=13.0 -o ./{${BUILD_PATH}}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.dylib
+    if [ $? -ne 0 ];then
+        echo "❌ [MacOS arm64] 编译失败！"
+        return 1
+    fi
+
+    strip -S ./{${BUILD_PATH}}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.dylib
+    if [ $? -ne 0 ];then
+        echo "❌ [MacOS arm64] 编译失败！"
+        return 1
+    fi
+    install_name_tool -id @rpath/libopenim_sdk_ffi.dylib ./{${BUILD_PATH}}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.dylib
+    if [ $? -ne 0 ];then
+        echo "❌ [MacOS arm64] 编译失败！"
+        return 1
+    fi
+    cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}" ${OUTPUT_PATH}
+    if [ $? -ne 0 ];then
+        echo "❌ [MacOS arm64] 编译失败！"
+        return 1
+    fi
+
     echo "✅ [MacOS arm64] 编译完成！"
     echo "========================================"
 }
