@@ -9,9 +9,9 @@ set -xeuo pipefail
 
 # ======================== 全局配置（可根据实际环境调整） ========================
 # Android NDK 路径（请替换为你本地的NDK路径）
-ANDROID_NDK_PATH="/usr/local/android-ndk-r25b"
+# ANDROID_NDK_PATH="/usr/local/android-ndk-r25b"
 # iOS 编译目标SDK（如 iphoneos、iphonesimulator）
-IOS_SDK="iphoneos"
+# IOS_SDK="iphoneos"
 # output
 OUTPUT_PATH="output"
 mkdir -p ${OUTPUT_PATH}
@@ -174,6 +174,12 @@ build_macos_amd64() {
         return 1
     fi
 
+    cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}" ${OUTPUT_PATH}
+    if [ $? -ne 0 ];then
+        echo "❌ [MacOS x86_64] 编译失败！"
+        return 1
+    fi
+
     echo "✅ [MacOS amd64] 编译完成！"
     echo "========================================"
 }
@@ -188,47 +194,40 @@ build_windows_amd64() {
     echo "========================================"
 }
 
-# Android arm64-v8a（主流64位架构）
-build_android_arm64-v8a() {
+# Android 
+build_android() {
     echo "========================================"
-    echo "📦 开始编译 [Android arm64-v8a] 平台代码..."
-    # 替换为实际编译命令（示例：NDK 编译 C/C++ 代码）
-    # ${ANDROID_NDK_PATH}/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk APP_ABI=arm64-v8a
-    # GOOS=android GOARCH=arm64 GOARM=8 go build -o ./bin/android/arm64-v8a/openim-sdk-core.so ./main.go
-    echo "✅ [Android arm64-v8a] 编译完成！"
-    echo "========================================"
-}
+    echo "📦 开始编译 [Android] 平台代码..."
+    
+    NDK_HOME=${ANDROID_NDK_HOME}
+    BasePath="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/"
+    # case "arm":
+	# 	cc = ccBasePath + "armv7a-linux-androideabi" + apiLevel + "-clang" + osSuffix
+	# case "arm64":
+	# 	cc = ccBasePath + "aarch64-linux-android" + apiLevel + "-clang" + osSuffix
+	# case "386":
+	# 	cc = ccBasePath + "i686-linux-android" + apiLevel + "-clang" + osSuffix
+	# case "amd64":
+	# 	cc = ccBasePath + "x86_64-linux-android" + apiLevel + "-clang" + osSuffix
+	# }
 
-# Android armeabi-v7a（32位主流架构）
-build_android_armeabi-v7a() {
-    echo "========================================"
-    echo "📦 开始编译 [Android armeabi-v7a] 平台代码..."
-    # 替换为实际编译命令
-    # ${ANDROID_NDK_PATH}/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk APP_ABI=armeabi-v7a
-    # GOOS=android GOARCH=arm GOARM=7 go build -o ./bin/android/armeabi-v7a/openim-sdk-core.so ./main.go
-    echo "✅ [Android armeabi-v7a] 编译完成！"
-    echo "========================================"
-}
+    unset CGO_CFLAGS
+    unset CGO_LDFLAGS
+    export GOOS=android
+    export GOARCH=arm64
+    export CGO_ENABLED=1
+    export CC="${BasePath}aarch64-linux-android21-clang"
 
-# Android x86_64（主流64位架构）
-build_android_amd64() {
-    echo "========================================"
-    echo "📦 开始编译 [Android amd64] 平台代码..."
-    # 替换为实际编译命令（示例：NDK 编译 C/C++ 代码）
-    # ${ANDROID_NDK_PATH}/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk APP_ABI=arm64-v8a
-    # GOOS=android GOARCH=arm64 GOARM=8 go build -o ./bin/android/arm64-v8a/openim-sdk-core.so ./main.go
-    echo "✅ [Android amd64] 编译完成！"
-    echo "========================================"
-}
+    pushd main
+    go build -buildmode=c-shared -ldflags="-linkmode=external -s -w" -o ../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so 
+    if [ $? -ne 0 ];then
+        popd
+        echo "❌ [Android] 编译失败！"
+        return 1
+    fi
+    popd
 
-# Android 386（32位主流架构）
-build_android_386() {
-    echo "========================================"
-    echo "📦 开始编译 [Android 386] 平台代码..."
-    # 替换为实际编译命令
-    # ${ANDROID_NDK_PATH}/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk APP_ABI=armeabi-v7a
-    # GOOS=android GOARCH=arm GOARM=7 go build -o ./bin/android/armeabi-v7a/openim-sdk-core.so ./main.go
-    echo "✅ [Android 386] 编译完成！"
+    echo "✅ [Android] 编译完成！"
     echo "========================================"
 }
 
@@ -284,6 +283,9 @@ ARCH=$(echo "$INPUT_ARCH" | tr '[:upper:]' '[:lower:]')
 # ======================== 第四步：拼接目标函数名并执行 ========================
 # 函数名规则：build_<os>_<arch>（与上方定义的函数名严格对应）
 TARGET_FUNC="build_${OS}_${ARCH}"
+if [ ${OS} -eq "android" ]; then
+    TARGET_FUNC="build_${OS}"
+fi
 
 echo "🔍 正在检查编译函数：$TARGET_FUNC"
 
