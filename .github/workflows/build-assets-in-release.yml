@@ -15,35 +15,35 @@ jobs:
         include:
           - os: ubuntu-latest
             arch: amd64
-            build: buildLinux
+            build: Linux
             os_name: ubuntu
           - os: ubuntu-latest
             arch: arm64
-            build: buildLinux
+            build: Linux
             os_name: ubuntu
           - os: macos-latest
             arch: amd64
-            build: buildMacOS
+            build: MacOS
             os_name: macos
           - os: macos-latest
             arch: arm64
-            build: buildMacOS
+            build: MacOS
             os_name: macos
           - os: windows-latest
             arch: amd64
-            build: buildWindows
+            build: Windows
             os_name: windows
           - os: windows-latest
             arch: 386
-            build: buildWindows
+            build: Windows
             os_name: windows
           - os: ubuntu-latest
             arch: amd64
-            build: buildAndroid
+            build: Android
             os_name: android
           - os: macos-latest
             arch: arm64
-            build: buildIOS
+            build: IOS
             os_name: ios
 
     steps:
@@ -110,7 +110,7 @@ jobs:
           }
 
           New-Item -ItemType Directory -Force -Path "shared/ios", "shared/linux", "shared/windows", "shared/android", "shared/macos"
-          # mage ${{ matrix.build }}
+          # bash build.sh ${{ matrix.build }} ${{ matrix.arch }}
 
           $tag_version = "${{ github.ref_name }}"
           $archive_name = "${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
@@ -123,31 +123,8 @@ jobs:
       - name: Setup and build on ${{ matrix.os }} ${{ matrix.arch }} ${{ matrix.build }}
         if: runner.os != 'Windows'
         run: |
-          if [[ "${{ matrix.build }}" == "buildIOS" ]]; then
-            echo "build ${{ matrix.build }} ${{ matrix.arch }} "
-          elif [[ "${{ matrix.build }}" == "buildAndroid" ]]; then
-            echo "build ${{ matrix.build }} ${{ matrix.arch }} "
-          elif [[ "${{ matrix.build }}" == "buildLinux" ]]; then
-            bash build.sh Linux ${{ matrix.arch }}
-          elif [[ "${{ matrix.build }}" == "buildWindows" ]]; then
-            echo "build ${{ matrix.build }} ${{ matrix.arch }} "
-          elif [[ "${{ matrix.build }}" == "buildMacOS" ]]; then
-            echo "build ${{ matrix.build }} ${{ matrix.arch }} "
-          fi
-
-          # # sudo bash ./bootstrap_install_mage.sh
-          # export GOARCH=${{ matrix.arch }}
-          # mkdir -p shared/ios shared/linux shared/windows shared/android shared/macos
-
-          # # Additional setup for iOS ARM64 builds
-          # if [[ "${{ matrix.build }}" == "buildMacOS" && "${{ matrix.arch }}" == "arm64" ]]; then
-          #   # Ensure Xcode command line tools are available
-          #   xcode-select --install 2>/dev/null || true
-          #   echo "Building MacOS library for ARM64..."
-          # fi
-
-          # # sudo -E mage ${{ matrix.build }}
-
+          bash build.sh ${{ matrix.build }} ${{ matrix.arch }}
+          
           # tag_version="${{ github.ref_name }}"
           # archive_name="${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
           # mkdir -p "$archive_name"
@@ -164,70 +141,70 @@ jobs:
           #   cp -r shared/macos/* "$archive_name/" 2>/dev/null || echo "No MacOS files to copy"
           # fi
 
-      - name: Create archive (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          $tag_version = "${{ github.ref_name }}"
-          $archive_name = "${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
+  #     - name: Create archive (Windows)
+  #       if: runner.os == 'Windows'
+  #       run: |
+  #         $tag_version = "${{ github.ref_name }}"
+  #         $archive_name = "${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
           
-          if (Test-Path $archive_name) {
-          $fileCount = (Get-ChildItem -Path $archive_name -File -Recurse).Count
-          if ($fileCount -gt 0) {
-           Compress-Archive -Path "$archive_name/*" -DestinationPath "$archive_name.zip" -Force
-           Write-Host "Created archive: $archive_name.zip"
-           Get-Item "$archive_name.zip"
-          } else {
-           Write-Host "No files found in $archive_name"
-           exit 1
-          }
-          } else {
-          Write-Host "Directory $archive_name not found"
-          exit 1
-          }
+  #         if (Test-Path $archive_name) {
+  #         $fileCount = (Get-ChildItem -Path $archive_name -File -Recurse).Count
+  #         if ($fileCount -gt 0) {
+  #          Compress-Archive -Path "$archive_name/*" -DestinationPath "$archive_name.zip" -Force
+  #          Write-Host "Created archive: $archive_name.zip"
+  #          Get-Item "$archive_name.zip"
+  #         } else {
+  #          Write-Host "No files found in $archive_name"
+  #          exit 1
+  #         }
+  #         } else {
+  #         Write-Host "Directory $archive_name not found"
+  #         exit 1
+  #         }
 
-      - name: Create archive (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          tag_version="${{ github.ref_name }}"
-          archive_name="${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
+  #     - name: Create archive (Unix)
+  #       if: runner.os != 'Windows'
+  #       run: |
+  #         tag_version="${{ github.ref_name }}"
+  #         archive_name="${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
           
-          if [ -d "$archive_name" ] && [ "$(find $archive_name -type f | wc -l)" -gt 0 ]; then
-            zip -r $archive_name.zip $archive_name/
-            echo "Created archive: $archive_name.zip"
-            ls -la $archive_name.zip
-          else
-            echo "No files found in $archive_name"
-            exit 1
-          fi
+  #         if [ -d "$archive_name" ] && [ "$(find $archive_name -type f | wc -l)" -gt 0 ]; then
+  #           zip -r $archive_name.zip $archive_name/
+  #           echo "Created archive: $archive_name.zip"
+  #           ls -la $archive_name.zip
+  #         else
+  #           echo "No files found in $archive_name"
+  #           exit 1
+  #         fi
 
-      - name: Upload archive artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-${{ github.ref_name }}-assets
-          path: ${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-${{ github.ref_name }}-assets.zip
+  #     - name: Upload archive artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-${{ github.ref_name }}-assets
+  #         path: ${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-${{ github.ref_name }}-assets.zip
 
-  release-upload:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  # release-upload:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
+  #     - name: Download all artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: artifacts
 
-      - name: List downloaded assets
-        run: |
-          echo "Downloaded artifact files:"
-          find artifacts -type f -name '*.zip'
+  #     - name: List downloaded assets
+  #       run: |
+  #         echo "Downloaded artifact files:"
+  #         find artifacts -type f -name '*.zip'
 
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/**/*.zip
-          update_existing: true
-          draft: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Upload to GitHub Release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #         files: artifacts/**/*.zip
+  #         update_existing: true
+  #         draft: false
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
