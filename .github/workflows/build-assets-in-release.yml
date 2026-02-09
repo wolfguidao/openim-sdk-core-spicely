@@ -124,11 +124,15 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           if [[ "${{ matrix.build }}" == "buildIOS" ]]; then
+            echo "build ${{ matrix.build }} ${{ matrix.arch }} "
           elif [[ "${{ matrix.build }}" == "buildAndroid" ]]; then
+            echo "build ${{ matrix.build }} ${{ matrix.arch }} "
           elif [[ "${{ matrix.build }}" == "buildLinux" ]]; then
             sh build.sh Linux ${{ matrix.arch }}
           elif [[ "${{ matrix.build }}" == "buildWindows" ]]; then
+            echo "build ${{ matrix.build }} ${{ matrix.arch }} "
           elif [[ "${{ matrix.build }}" == "buildMacOS" ]]; then
+            echo "build ${{ matrix.build }} ${{ matrix.arch }} "
           fi
 
           # # sudo bash ./bootstrap_install_mage.sh
