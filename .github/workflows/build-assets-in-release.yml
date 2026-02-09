@@ -128,7 +128,7 @@ jobs:
           elif [[ "${{ matrix.build }}" == "buildAndroid" ]]; then
             echo "build ${{ matrix.build }} ${{ matrix.arch }} "
           elif [[ "${{ matrix.build }}" == "buildLinux" ]]; then
-            sh build.sh Linux ${{ matrix.arch }}
+            bash build.sh Linux ${{ matrix.arch }}
           elif [[ "${{ matrix.build }}" == "buildWindows" ]]; then
             echo "build ${{ matrix.build }} ${{ matrix.arch }} "
           elif [[ "${{ matrix.build }}" == "buildMacOS" ]]; then

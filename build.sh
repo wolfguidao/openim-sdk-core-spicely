@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # ======================== 调试/容错配置 ========================
 # set -x：开启执行日志，显示每一步执行的命令
@@ -180,15 +180,15 @@ if [ $# -ne 2 ]; then
     echo "✅ 正确用法：sh $0 <操作系统> <架构>"
     echo "📌 支持的平台&架构示例："
     echo "   # Linux 系列"
-    echo "   sh $0 Linux x86          sh $0 Linux arm64"
+    echo "   bash $0 Linux x86          bash $0 Linux arm64"
     echo "   # MacOS 系列"
-    echo "   sh $0 MacOS arm64        sh $0 MacOS x86_64"
+    echo "   bash $0 MacOS arm64        bash $0 MacOS x86_64"
     echo "   # Windows 系列"
-    echo "   sh $0 Windows amd64"
+    echo "   bash $0 Windows amd64"
     echo "   # Android 系列（核心新增）"
-    echo "   sh $0 Android arm64-v8a  sh $0 Android armeabi-v7a"
+    echo "   bash $0 Android arm64-v8a  bash $0 Android armeabi-v7a"
     echo "   # iOS 系列（核心新增）"
-    echo "   sh $0 iOS arm64          sh $0 iOS x86_64"
+    echo "   bash $0 iOS arm64          bash $0 iOS x86_64"
     exit 1
 fi
 
