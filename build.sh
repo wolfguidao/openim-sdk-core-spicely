@@ -283,7 +283,7 @@ ARCH=$(echo "$INPUT_ARCH" | tr '[:upper:]' '[:lower:]')
 # ======================== 第四步：拼接目标函数名并执行 ========================
 # 函数名规则：build_<os>_<arch>（与上方定义的函数名严格对应）
 TARGET_FUNC="build_${OS}_${ARCH}"
-if [ ${OS} -eq "android" ]; then
+if [ "${OS}" = "android" ]; then
     TARGET_FUNC="build_${OS}"
 fi
 
