@@ -340,7 +340,7 @@ build_ios_arm64() {
     fi
     popd
 
-    xcrun -sdk iphonesimulator clang -arch arm64 -fpic -shared -Wl,-all_load ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a -framework CoreFoundation -framework Security -lresolv -miphoneos-version-min=12.0 -compatibility_version 1.0.0 -o ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.dylib
+    xcrun -sdk iphonesimulator clang -target arm64-apple-ios12.0-simulator -arch arm64 -fpic -shared -Wl,-all_load ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a -framework CoreFoundation -framework Security -lresolv -miphoneos-version-min=12.0 -compatibility_version 1.0.0 -o ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.dylib
     if [ $? -ne 0 ];then
         echo "❌ [iOS arm64] 编译失败！"
         return 1
