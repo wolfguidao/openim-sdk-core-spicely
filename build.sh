@@ -240,7 +240,7 @@ build_android() {
     export GOOS=android
     export GOARCH=arm
     export CGO_ENABLED=1
-    export CC="${BasePath}armv7a-linux-androideabi16-clang"
+    export CC="${BasePath}armv7a-linux-androideabi21-clang"
 
     pushd main
     go build -buildmode=c-shared -ldflags="-linkmode=external -s -w" -o ../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so 
