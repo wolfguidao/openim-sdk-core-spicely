@@ -266,8 +266,9 @@ build_ios_arm64() {
     echo "========================================"
     echo "📦 开始编译 [iOS arm64 (真机)] 平台代码..."
     
-    export CFLAGS="-arch arm64 -miphoneos-version-min=12.0 -isysroot "$(xcrun -sdk iphoneos --show-sdk-path) 
-    export CGO_LDFLAGS="-arch arm64 -miphoneos-version-min=12.0 -isysroot "$(xcrun -sdk iphoneos --show-sdk-path)  
+    export CFLAGS="-arch arm64 -miphoneos-version-min=12.0 -isysroot $(xcrun -sdk iphoneos --show-sdk-path)"
+    export CGO_CFLAGS="-arch arm64 -miphoneos-version-min=12.0 -isysroot $(xcrun -sdk iphoneos --show-sdk-path)"
+    export CGO_LDFLAGS="-arch arm64 -miphoneos-version-min=12.0 -isysroot $(xcrun -sdk iphoneos --show-sdk-path)" 
     CGO_ENABLED=1
     GOARCH=arm64 
     GOOS=ios 
