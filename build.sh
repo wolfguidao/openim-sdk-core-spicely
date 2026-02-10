@@ -201,6 +201,8 @@ build_android() {
     
     NDK_HOME=${ANDROID_NDK_HOME}
     BasePath="${NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/"
+
+    ls -al ${BasePath}
     # case "arm":
 	# 	cc = ccBasePath + "armv7a-linux-androideabi" + apiLevel + "-clang" + osSuffix
 	# case "arm64":
