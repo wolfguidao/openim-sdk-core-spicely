@@ -224,7 +224,7 @@ build_android() {
     go build -buildmode=c-shared -ldflags="-linkmode=external -s -w" -o ../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so 
     if [ $? -ne 0 ];then
         popd
-        echo "❌ [Android] 编译失败！"
+        echo "❌ [Android arm64] 编译失败！"
         return 1
     fi
     popd
@@ -246,14 +246,36 @@ build_android() {
     go build -buildmode=c-shared -ldflags="-linkmode=external -s -w" -o ../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so 
     if [ $? -ne 0 ];then
         popd
-        echo "❌ [Android] 编译失败！"
+        echo "❌ [Android armv7] 编译失败！"
         return 1
     fi
     popd
 
     cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}" ${OUTPUT_PATH}
     if [ $? -ne 0 ];then
-        echo "❌ [Android arm64] 编译失败！"
+        echo "❌ [Android armv7] 编译失败！"
+        return 1
+    fi
+
+    unset CGO_CFLAGS
+    unset CGO_LDFLAGS
+    export GOOS=android
+    export GOARCH=amd64
+    export CGO_ENABLED=1
+    export CC="${BasePath}x86_64-linux-android21-clang"
+
+    pushd main
+    go build -buildmode=c-shared -ldflags="-linkmode=external -s -w" -o ../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.so 
+    if [ $? -ne 0 ];then
+        popd
+        echo "❌ [Android x86_64] 编译失败！"
+        return 1
+    fi
+    popd
+
+    cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}" ${OUTPUT_PATH}
+    if [ $? -ne 0 ];then
+        echo "❌ [Android x86_64] 编译失败！"
         return 1
     fi
 
@@ -301,6 +323,7 @@ build_ios_arm64() {
 
     echo "✅ [iOS arm64 (真机)] 编译完成！"
 
+    export CGO_CFLAGS="-arch arm64 -miphoneos-version-min=12.0 -isysroot $(xcrun -sdk iphonesimulator --show-sdk-path)"
     export CFLAGS="-arch arm64 -miphoneos-version-min=12.0 -isysroot "$(xcrun -sdk iphonesimulator --show-sdk-path) 
     export CGO_LDFLAGS="-arch arm64 -miphoneos-version-min=12.0 -isysroot "$(xcrun -sdk iphonesimulator --show-sdk-path)  
     CGO_ENABLED=1

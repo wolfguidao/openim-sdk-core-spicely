@@ -162,26 +162,26 @@ jobs:
   #         exit 1
   #         }
 
-  #     - name: Create archive (Unix)
-  #       if: runner.os != 'Windows'
-  #       run: |
-  #         tag_version="${{ github.ref_name }}"
-  #         archive_name="${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
+      - name: Create archive (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          tag_version="${{ github.ref_name }}"
+          archive_name="${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
           
-  #         if [ -d "$archive_name" ] && [ "$(find $archive_name -type f | wc -l)" -gt 0 ]; then
-  #           zip -r $archive_name.zip $archive_name/
-  #           echo "Created archive: $archive_name.zip"
-  #           ls -la $archive_name.zip
-  #         else
-  #           echo "No files found in $archive_name"
-  #           exit 1
-  #         fi
+          if [ -d output ]; then
+            zip -r $archive_name.zip $output/
+            echo "Created archive: $archive_name.zip"
+            ls -la $archive_name.zip
+          else
+            echo "No files found in $archive_name"
+            exit 1
+          fi
 
-  #     - name: Upload archive artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-${{ github.ref_name }}-assets
-  #         path: ${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-${{ github.ref_name }}-assets.zip
+      - name: Upload archive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-${{ github.ref_name }}-assets
+          path: ${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-${{ github.ref_name }}-assets.zip
 
   # release-upload:
   #   runs-on: ubuntu-latest
