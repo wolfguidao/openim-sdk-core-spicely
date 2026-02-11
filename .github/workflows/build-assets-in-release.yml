@@ -110,7 +110,7 @@ jobs:
           }
 
           New-Item -ItemType Directory -Force -Path "shared/ios", "shared/linux", "shared/windows", "shared/android", "shared/macos"
-          # bash build.sh ${{ matrix.build }} ${{ matrix.arch }}
+          bash build.sh ${{ matrix.build }} ${{ matrix.arch }}
 
           $tag_version = "${{ github.ref_name }}"
           $archive_name = "${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
