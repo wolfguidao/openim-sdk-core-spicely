@@ -100,7 +100,6 @@ jobs:
       - name: Setup and build on Windows ${{ matrix.arch }}
         if: runner.os == 'Windows'
         run: |
-          # ./bootstrap_install_mage.bat
           $env:GOARCH="${{ matrix.arch }}"
           if ($env:GOARCH -eq "386") {
             $env:PATH = "C:/mingw32/bin;$env:PATH"
@@ -109,16 +108,7 @@ jobs:
             $env:CXX="g++ -m32"
           }
 
-          New-Item -ItemType Directory -Force -Path "shared/ios", "shared/linux", "shared/windows", "shared/android", "shared/macos"
           bash build.sh ${{ matrix.build }} ${{ matrix.arch }}
-
-          $tag_version = "${{ github.ref_name }}"
-          $archive_name = "${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
-          New-Item -ItemType Directory -Force -Path $archive_name
-
-          if (Test-Path "shared/windows" -PathType Container) {
-            Copy-Item -Path "shared/windows/*" -Destination $archive_name -Recurse -ErrorAction SilentlyContinue
-          }
 
       - name: Setup and build on ${{ matrix.os }} ${{ matrix.arch }} ${{ matrix.build }}
         if: runner.os != 'Windows'
@@ -129,38 +119,20 @@ jobs:
           # archive_name="${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
           # mkdir -p "$archive_name"
 
-          # if [[ "${{ matrix.build }}" == "buildIOS" ]]; then
-          #   cp -r shared/ios/* "$archive_name/" 2>/dev/null || echo "No iOS files to copy"
-          # elif [[ "${{ matrix.build }}" == "buildAndroid" ]]; then
-          #   cp -r shared/android/* "$archive_name/" 2>/dev/null || echo "No Android files to copy"
-          # elif [[ "${{ matrix.build }}" == "buildLinux" ]]; then
-          #   cp -r shared/linux/* "$archive_name/" 2>/dev/null || echo "No Linux files to copy"
-          # elif [[ "${{ matrix.build }}" == "buildWindows" ]]; then
-          #   cp -r shared/windows/* "$archive_name/" 2>/dev/null || echo "No Windows files to copy"
-          # elif [[ "${{ matrix.build }}" == "buildMacOS" ]]; then
-          #   cp -r shared/macos/* "$archive_name/" 2>/dev/null || echo "No MacOS files to copy"
-          # fi
-
-  #     - name: Create archive (Windows)
-  #       if: runner.os == 'Windows'
-  #       run: |
-  #         $tag_version = "${{ github.ref_name }}"
-  #         $archive_name = "${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
+      - name: Create archive (Windows)
+        if: runner.os == 'Windows'
+        run: |
+           $tag_version = "${{ github.ref_name }}"
+           $archive_name = "${{ matrix.os_name }}-${{ matrix.arch }}-${{ matrix.build }}-$tag_version-assets"
           
-  #         if (Test-Path $archive_name) {
-  #         $fileCount = (Get-ChildItem -Path $archive_name -File -Recurse).Count
-  #         if ($fileCount -gt 0) {
-  #          Compress-Archive -Path "$archive_name/*" -DestinationPath "$archive_name.zip" -Force
-  #          Write-Host "Created archive: $archive_name.zip"
-  #          Get-Item "$archive_name.zip"
-  #         } else {
-  #          Write-Host "No files found in $archive_name"
-  #          exit 1
-  #         }
-  #         } else {
-  #         Write-Host "Directory $archive_name not found"
-  #         exit 1
-  #         }
+           if (Test-Path output) {
+           Compress-Archive -Path "output/*" -DestinationPath "$archive_name.zip" -Force
+            Write-Host "Created archive: $archive_name.zip"
+            Get-Item "$archive_name.zip"
+           } else {
+           Write-Host "Directory output not found"
+           exit 1
+           }
 
       - name: Create archive (Unix)
         if: runner.os != 'Windows'
