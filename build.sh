@@ -194,7 +194,7 @@ build_windows_amd64() {
 	export GOOS=windows
 	export GOARCH=amd64
 	export CGO_ENABLED=1
-	export CC=${CC}
+	export CC=x86_64-w64-mingw32-gcc
 
 	pushd main
 	go build -tags windows -ldflags="-s -w" -trimpath -v -o "../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.dll" -buildmode=c-shared
@@ -218,6 +218,29 @@ build_windows_amd64() {
 build_windows_386() {
 	echo "========================================"
     echo "📦 开始编译 [Windows 386] 平台代码..."
+
+	unset CGO_CFLAGS
+	unset CGO_LDFLAGS
+	export GOOS=windows
+	export GOARCH=386
+	export CGO_ENABLED=1
+	export CC=${CC}
+
+	pushd main
+	go build -tags windows -ldflags="-s -w" -trimpath -v -o "../${BUILD_PATH}/${GOOS}_${GOARCH}/libopenim_sdk_ffi.dll" -buildmode=c-shared
+	if [ $? -ne 0 ];then
+        popd
+        echo "❌ [Windows 386] 编译失败！"
+        return 1
+    fi
+    popd
+
+	cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}" ${OUTPUT_PATH}
+    if [ $? -ne 0 ];then
+        echo "❌ [Windows 386] 编译失败！"
+        return 1
+    fi
+	
 	echo "✅ [Windows 386] 编译完成！"
     echo "========================================"
 }
