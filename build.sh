@@ -417,12 +417,12 @@ build_ios_amd64() {
     echo "📦 开始编译 [iOS amd64 (模拟器)] 平台代码..."
 
 	export SIMULATOR_SDK_PATH=$(xcrun -sdk iphonesimulator --show-sdk-path)
-	export CFLAGS="-arch x86_64 -mios-simulator-version-min=12.0 -isysroot $SIMULATOR_SDK_PATH"
-	export CGO_CFLAGS="-arch x86_64 -mios-simulator-version-min=12.0 -isysroot $SIMULATOR_SDK_PATH"
-	export CGO_LDFLAGS="-arch x86_64 -mios-simulator-version-min=12.0 -isysroot $SIMULATOR_SDK_PATH" 
+	export CFLAGS="-arch x86_64 -target x86_64-apple-ios12.0-simulator -mios-simulator-version-min=12.0 -isysroot $SIMULATOR_SDK_PATH"
+	export CGO_CFLAGS="-arch x86_64 -target x86_64-apple-ios12.0-simulator -mios-simulator-version-min=12.0 -isysroot $SIMULATOR_SDK_PATH"
+	export CGO_LDFLAGS="-arch x86_64 -target x86_64-apple-ios12.0-simulator -mios-simulator-version-min=12.0 -isysroot $SIMULATOR_SDK_PATH" 
 
     export CGO_ENABLED=1
-	export GOARCH=x86_64 
+	export GOARCH=amd64
 	export GOOS=ios 
 	export CC="clang $CFLAGS $CGO_LDFLAGS" 
 
