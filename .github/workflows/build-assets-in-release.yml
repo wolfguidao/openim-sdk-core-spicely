@@ -45,10 +45,6 @@ jobs:
             arch: arm64
             build: IOS
             os_name: ios
-          - os: macos-latest-large
-            arch: amd64
-            build: IOS
-            os_name: ios
 
     steps:
       - name: Checkout code
