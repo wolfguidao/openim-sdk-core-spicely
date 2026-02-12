@@ -374,28 +374,60 @@ build_ios_arm64() {
 
     echo "✅ [iOS arm64 (真机)] 编译完成！"
 
-    export CGO_CFLAGS="-target arm64-apple-ios12.0-simulator -arch arm64 -miphoneos-version-min=12.0 -isysroot $(xcrun -sdk iphonesimulator --show-sdk-path)"
-    export CFLAGS="-target arm64-apple-ios12.0-simulator -arch arm64 -miphoneos-version-min=12.0 -isysroot "$(xcrun -sdk iphonesimulator --show-sdk-path) 
-    export CGO_LDFLAGS="-target arm64-apple-ios12.0-simulator -arch arm64 -miphoneos-version-min=12.0 -isysroot "$(xcrun -sdk iphonesimulator --show-sdk-path)  
-    CGO_ENABLED=1
-    GOARCH=arm64 
-    GOOS=ios 
-    CC="clang $CFLAGS $CGO_LDFLAGS" 
+    # export CGO_CFLAGS="-target arm64-apple-ios12.0-simulator -arch arm64 -miphoneos-version-min=12.0 -isysroot $(xcrun -sdk iphonesimulator --show-sdk-path)"
+    # export CFLAGS="-target arm64-apple-ios12.0-simulator -arch arm64 -miphoneos-version-min=12.0 -isysroot "$(xcrun -sdk iphonesimulator --show-sdk-path) 
+    # export CGO_LDFLAGS="-target arm64-apple-ios12.0-simulator -arch arm64 -miphoneos-version-min=12.0 -isysroot "$(xcrun -sdk iphonesimulator --show-sdk-path)  
+    # CGO_ENABLED=1
+    # GOARCH=arm64 
+    # GOOS=ios 
+    # CC="clang $CFLAGS $CGO_LDFLAGS" 
 
-    pushd main
-    go build -tags ios -ldflags "-s -w" -trimpath -v -o ../${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a -buildmode c-archive
-    if [ $? -ne 0 ];then
-        popd
-        echo "❌ [iOS arm64] 编译失败！"
-        return 1
-    fi
-    popd
+    # pushd main
+    # go build -tags ios -ldflags "-s -w" -trimpath -v -o ../${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a -buildmode c-archive
+    # if [ $? -ne 0 ];then
+    #     popd
+    #     echo "❌ [iOS arm64] 编译失败！"
+    #     return 1
+    # fi
+    # popd
 
-    xcrun -sdk iphonesimulator clang -target arm64-apple-ios12.0-simulator -arch arm64 -fpic -shared -Wl,-all_load ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a -framework CoreFoundation -framework Security -lresolv -miphoneos-version-min=12.0 -compatibility_version 1.0.0 -o ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.dylib
-    if [ $? -ne 0 ];then
-        echo "❌ [iOS arm64] 编译失败！"
-        return 1
-    fi
+    # xcrun -sdk iphonesimulator clang -target arm64-apple-ios12.0-simulator -arch arm64 -fpic -shared -Wl,-all_load ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a -framework CoreFoundation -framework Security -lresolv -miphoneos-version-min=12.0 -compatibility_version 1.0.0 -o ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.dylib
+    # if [ $? -ne 0 ];then
+    #     echo "❌ [iOS arm64] 编译失败！"
+    #     return 1
+    # fi
+
+	export SIMULATOR_SDK_PATH=$(xcrun -sdk iphonesimulator --show-sdk-path)
+	export CFLAGS="-arch x86_64 -mios-simulator-version-min=12.0 -isysroot $SIMULATOR_SDK_PATH"
+	export CGO_CFLAGS="-arch x86_64 -mios-simulator-version-min=12.0 -isysroot $SIMULATOR_SDK_PATH"
+	export CGO_LDFLAGS="-arch x86_64 -mios-simulator-version-min=12.0 -isysroot $SIMULATOR_SDK_PATH" 
+
+    export CGO_ENABLED=1
+	export GOARCH=x86_64 
+	export GOOS=ios 
+	export CC="clang $CFLAGS $CGO_LDFLAGS" 
+
+	pushd main
+	go build -tags ios -ldflags "-s -w" -trimpath -v -o ../${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a -buildmode c-archive
+	if [ $? -ne 0 ];then
+    	popd
+    	echo "❌ [iOS x86_64 Simulator] 编译静态库失败！"
+    	exit 1
+	fi
+	popd
+
+	# ===================== 编译动态库（dylib） =====================
+	# 关键修改：-arch x86_64 + 模拟器SDK + -mios-simulator-version-min
+	xcrun -sdk iphonesimulator clang -arch x86_64 -fpic -shared -Wl,-all_load \
+	    ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a \
+    	-framework CoreFoundation -framework Security -lresolv \
+    	-mios-simulator-version-min=12.0 -compatibility_version 1.0.0 \
+    	-o ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.dylib
+
+	if [ $? -ne 0 ];then
+    	echo "❌ [iOS x86_64 Simulator] 编译动态库失败！"
+    	exit 1
+	fi
     
     strip -S ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.dylib
     lipo -create ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.dylib -output ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/openim_sdk_ffi
@@ -403,11 +435,11 @@ build_ios_arm64() {
 
     cp -r "./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator" ${OUTPUT_PATH}
     if [ $? -ne 0 ];then
-        echo "❌ [iOS arm64 (模拟器)] 编译失败！"
+        echo "❌ [iOS x86_64 (模拟器)] 编译失败！"
         return 1
     fi
 
-    echo "✅ [iOS arm64 (模拟器)] 编译完成！"
+    echo "✅ [iOS x86_64 (模拟器)] 编译完成！"
     echo "========================================"
 }
 
