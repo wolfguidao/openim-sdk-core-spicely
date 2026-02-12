@@ -408,7 +408,7 @@ build_ios_arm64() {
 	export CC="clang $CFLAGS $CGO_LDFLAGS" 
 
 	pushd main
-	go build -tags ios -ldflags "-s -w" -trimpath -v -o ../${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a -buildmode c-archive
+	go build -tags ios -ldflags "-s -w" -trimpath -v -o ../${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi_go.dylib -buildmode c-shared
 	if [ $? -ne 0 ];then
     	popd
     	echo "❌ [iOS x86_64 Simulator] 编译静态库失败！"
@@ -419,7 +419,7 @@ build_ios_arm64() {
 	# ===================== 编译动态库（dylib） =====================
 	# 关键修改：-arch x86_64 + 模拟器SDK + -mios-simulator-version-min
 	xcrun -sdk iphonesimulator clang -arch x86_64 -fpic -shared -Wl,-all_load \
-	    ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.a \
+	    ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi_go.dylib \
     	-framework CoreFoundation -framework Security -lresolv \
     	-mios-simulator-version-min=12.0 -compatibility_version 1.0.0 \
     	-o ./${BUILD_PATH}/${GOOS}_${GOARCH}_iphonesimulator/libopenim_sdk_ffi.dylib
