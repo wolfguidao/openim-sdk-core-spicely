@@ -45,7 +45,7 @@ jobs:
             arch: arm64
             build: IOS
             os_name: ios
-          - os: macos-latest
+          - os: macos-12
             arch: amd64
             build: IOS
             os_name: ios
